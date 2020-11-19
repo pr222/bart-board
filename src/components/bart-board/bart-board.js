@@ -3,7 +3,7 @@
  *
  * @author Johan Leitet <johan.leitet@lnu.se>
  * @author Mats Loock <mats.loock@lnu.se>
- * @author // TODO: YOUR NAME <YOUR EMAIL>
+ * @author Pauliina Raitaniemi <pr222ja@student.lnu.se>
  * @version 2.0.0
  */
 
@@ -53,17 +53,21 @@ customElements.define('bart-board',
         .appendChild(template.content.cloneNode(true))
 
       // Get the p-element in which we add the text.
-      this._textElement = this.shadowRoot.querySelector('p')
+      this._textBoard = this.shadowRoot.querySelector('p')
 
-      // TODO: Maybee you need to define some default values here
+      this._letters = 0
+      this._text = 'I will never ever skip the line in the task queue again.'
+      this._speed = 50
+      this._interval = null
     }
 
     /**
      * Watches the attributes "text" and "speed" for changes on the element.
      *
+     * @returns {string} - The observed attributes.
      */
     static get observedAttributes () {
-      // TODO: Add observer for text and speed.
+      return ['text', 'speed']
     }
 
     /**
@@ -74,38 +78,83 @@ customElements.define('bart-board',
      * @param {any} newValue the new attribute value.
      */
     attributeChangedCallback (name, oldValue, newValue) {
-      // TODO: Add your code for handling updates and creation of the observed attributes.
+      if (name === 'text') {
+        this._text = newValue
+      } else if (name === 'speed') {
+        this._speed = newValue
+      }
     }
 
     /**
      * Called after the element is inserted into the DOM.
      */
     connectedCallback () {
-      // TODO: Add your eventlisteners for mousedown, mouseup here. You also need to add mouseleave to stop writing
-      //       when the mouse pointer leavs the bart board. This should stop the printing.
+      this.addEventListener('mousedown', this._onWrite)
+      this.addEventListener('mouseup', this.stopWriting)
+      this.addEventListener('mouseout', this.stopWriting)
+      console.log('Listening')
     }
 
     /**
      * Called after the element has been removed from the DOM.
      */
     disconnectedCallback () {
-      // TODO: Remove your eventlisterners here.
+      this.removeEventListener('mousedown', this._onWrite)
+      this.removeEventListener('mouseup', this.stopWriting)
+      this.removeEventListener('mouseleave', this.stopWriting)
+      this.stopWriting()
     }
 
     /**
      * Stops the writing.
      *
+     * @returns {HTMLElement} - The stopped board.
      */
     stopWriting () {
       // TODO: Implement the method
+      clearTimeout(this._interval)
+      console.log('Clear?')
+
+      return this
     }
 
     /**
      * Wipes the board clean and resets the letter counter.
+     *
+     * @returns {HTMLElement} - Its own emptied p element.
      */
     clear () {
-      // TODO: Implement the method
+      this._textBoard.textContent = ''
+      this._letters = 0
+
+      return this
     }
-    // TODO: Add methods at will. The solution file will use the aditional: "_onWrite"
+
+    /**
+     * Writes out the text.
+     */
+    _onWrite () {
+      console.log('Write!')
+
+      this._interval = setInterval(() => {
+        if (this._textBoard.offsetHeight >= this.offsetHeight) {
+          // Create custom event to listen to for calling clear().
+          const event = new CustomEvent('filled')
+          this.dispatchEvent(event)
+          // Stop writing.
+          this.stopWriting()
+          console.log('Stop!')
+        } else {
+          // Write a letter.
+          this._textBoard.textContent += this._text.charAt(this._letters++)
+          console.log('Writing')
+          // Reset to make it possible to continue on next line of text.
+          if (this._letters >= this._text.length) {
+            this._textBoard.textContent += ' '
+            this._letters = 0
+          }
+        }
+      }, this._speed)
+    }
   }
 )

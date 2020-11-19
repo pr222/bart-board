@@ -8,4 +8,11 @@
 
 import './components/bart-board/'
 
-// TODO: Use this file to experiment with the bart-board.
+// Adding a board with JS
+const board = document.createElement('bart-board')
+document.querySelector('body').appendChild(board)
+
+// Make the bad Bart board wipeable.
+document.querySelector('#badBart').addEventListener('filled', (event) => {
+  event.target.clear()
+})

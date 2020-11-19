@@ -25,3 +25,7 @@ h1 {
 	text-align:center;
 
 }
+
+bart-board::part(text) {
+	color:#a2a1c2;
+}
